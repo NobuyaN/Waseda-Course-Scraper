@@ -1,6 +1,7 @@
 import scrapy
 import json
 from waseda.items import WasedaCourseItem
+import uuid
 
 
 class WasedascrapySpider(scrapy.Spider):
@@ -8,14 +9,8 @@ class WasedascrapySpider(scrapy.Spider):
     allowed_domains = ["www.wsl.waseda.jp"]
     start_urls = ["https://www.wsl.waseda.jp/syllabus/JAA104.php?pKey=1100001010012025110000101011&pLng=en"]
 
-    custom_settings = {
-        'FEEDS': {
-            'coursedatatemp.json': {'format': 'json', 'overwrite': True},
-        }
-    }
-
     def parse(self, response):
-        with open("clean_pKeys.json", "r", encoding="utf-8") as f:
+        with open("data/clean_pKeys.json", "r", encoding="utf-8") as f:
             pKeys = json.load(f)
         for pKey in pKeys:
             course_url = f"https://www.wsl.waseda.jp/syllabus/JAA104.php?pKey={pKey}&pLng=en"
@@ -44,6 +39,7 @@ class WasedascrapySpider(scrapy.Spider):
             - Since XPath is case-sensitive, translate(normalize-space(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") is helpful
         """
      
+        item["id"] = str(uuid.uuid4())
         item["url"] = response.url
         item["year"] = xPath_boilerplate("Year") 
         item["school"] = xPath_boilerplate("School")
