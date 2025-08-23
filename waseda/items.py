@@ -14,6 +14,7 @@ class WasedaItem(scrapy.Item):
 
 class WasedaCourseItem(scrapy.Item):
 
+    id = scrapy.Field()
     url = scrapy.Field()
     year = scrapy.Field()
     school = scrapy.Field()
