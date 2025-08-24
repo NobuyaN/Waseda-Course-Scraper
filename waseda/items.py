@@ -4,7 +4,6 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 import scrapy
-from scrapy.loader import ItemLoader
 
 
 class WasedaItem(scrapy.Item):
@@ -14,7 +13,7 @@ class WasedaItem(scrapy.Item):
 
 class WasedaCourseItem(scrapy.Item):
 
-    id = scrapy.Field()
+    pKey_id = scrapy.Field()
     url = scrapy.Field()
     year = scrapy.Field()
     school = scrapy.Field()
