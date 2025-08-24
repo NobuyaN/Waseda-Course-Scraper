@@ -14,10 +14,13 @@ class WasedascrapySpider(scrapy.Spider):
             pKeys = json.load(f)
         for pKey in pKeys:
             course_url = f"https://www.wsl.waseda.jp/syllabus/JAA104.php?pKey={pKey}&pLng=en"
-            yield response.follow(course_url, self.parse_course_details)
+            yield response.follow(course_url, 
+                                  self.parse_course_details,
+                                  cb_kwargs={"pKey_id": pKey},
+                                  )
 
-    
-    def parse_course_details(self, response):
+
+    def parse_course_details(self, response, pKey_id):
         """
             using response.css would be very brittle due to different table sizes for different course
             therefore, xpath is recommended for detail extractions
@@ -31,7 +34,6 @@ class WasedascrapySpider(scrapy.Spider):
                 f"normalize-space(translate(string(//{search_tag}[contains(normalize-space(.), '{text}')]/following-sibling::td[1]), '\xa0\u3000％', ' '))"
                 ).get() or None
 
-
         item = WasedaCourseItem()
         """
             - Must yield strings
@@ -39,7 +41,7 @@ class WasedascrapySpider(scrapy.Spider):
             - Since XPath is case-sensitive, translate(normalize-space(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") is helpful
         """
      
-        item["id"] = str(uuid.uuid4())
+        item["pKey_id"] = str(pKey_id)
         item["url"] = response.url
         item["year"] = xPath_boilerplate("Year") 
         item["school"] = xPath_boilerplate("School")
@@ -60,5 +62,4 @@ class WasedascrapySpider(scrapy.Spider):
         item["class_participation_contrib_prcnt"] = xPath_boilerplate("Class Participation:")
         item["others_contrib_prcnt"] = xPath_boilerplate("Others:")
         
-
         yield item
