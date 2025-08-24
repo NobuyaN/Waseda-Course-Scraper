@@ -1,3 +1,6 @@
-venv/
+.venv/
 .DS_Store
 __pycache__/
+data/coursedatatemp.json
+data/coursedatatemp.csv
+.env/
