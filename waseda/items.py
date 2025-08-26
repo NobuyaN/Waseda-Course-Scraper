@@ -20,6 +20,7 @@ class WasedaCourseItem(scrapy.Item):
     course_title = scrapy.Field()
     instructor = scrapy.Field()
     term_day_period = scrapy.Field()
+    slots = scrapy.Field()
     category = scrapy.Field()
     eligible_year = scrapy.Field()
     credits = scrapy.Field()
