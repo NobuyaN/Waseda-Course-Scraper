@@ -72,7 +72,7 @@ LOGSTATS_INTERVAL = 0
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    "waseda.pipelines.WasedaPipeline": 300,
-#    "waseda.pipelines.MongoPipeline": 400,
+   "waseda.pipelines.MongoPipeline": 400,
 }
 
 MONGO_URI = "mongodb://127.0.0.1:27017"
