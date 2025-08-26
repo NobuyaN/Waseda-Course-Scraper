@@ -13,11 +13,11 @@ SPIDER_MODULES = ["waseda.spiders"]
 NEWSPIDER_MODULE = "waseda.spiders"
 
 FEEDS = {
-    'coursedata.json': {'format': 'json'},
+    'data/coursedatatemp.csv': {'format': 'csv', 'overwrite': True},
+    'data/coursedatatemp.json': {'format': 'json', 'overwrite': True}
 }
 
 ADDONS = {}
-
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "waseda (+http://www.yourdomain.com)"
@@ -26,8 +26,8 @@ ADDONS = {}
 ROBOTSTXT_OBEY = False
 
 # Concurrency and throttling settings
-CONCURRENT_REQUESTS = 32
-CONCURRENT_REQUESTS_PER_DOMAIN = 16
+CONCURRENT_REQUESTS = 64
+CONCURRENT_REQUESTS_PER_DOMAIN = 32
 DOWNLOAD_DELAY = 0
 RANDOMIZE_DOWNLOAD_DELAY = False
 
@@ -72,7 +72,11 @@ LOGSTATS_INTERVAL = 0
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    "waseda.pipelines.WasedaPipeline": 300,
+#    "waseda.pipelines.MongoPipeline": 400,
 }
+
+MONGO_URI = "mongodb://127.0.0.1:27017"
+MONGO_DATABASE = 'scrapy_data'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
