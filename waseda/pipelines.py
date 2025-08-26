@@ -7,8 +7,9 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 import re
-from waseda.parser import make_schedule, make_terms
-import unicodedata
+from waseda.parser import make_schedules, make_terms, make_slots
+from unicodedata import normalize
+import pymongo
 
 
 class WasedaPipeline:
@@ -67,13 +68,36 @@ class WasedaPipeline:
         }
 
         value = (adapter.get("campus") or "").strip()
-        value = unicodedata.normalize("NFKC", value).lower()
+        value = normalize("NFKC", value).lower()
 
         if value in campus_mapping:
             adapter["campus"] = campus_mapping[value]
         if value == "":
             adapter["campus"] = None
         
+        """
+            shorten level string
+        """
+
+        level_mapping = {
+            "beginner, initial or introductory": "Beginner",
+            "intermediate, developmental and applicative": "Intermediate",
+            "advanced, practical and specialized": "Advanced",
+            "final stage advanced-level undergraduate": "Final-stage",
+            "level of master": "Master",
+            "level of doctor": "Doctor",
+            "N/A": None
+        }
+
+        value = (adapter.get("level") or "").strip()
+        value = normalize("NFKC", value).lower()
+
+        # 1
+        if value in level_mapping:
+            adapter["level"] = level_mapping[value]
+        if value == "":
+            adapter["level"] == None
+
         """
             create a dictionary for term_day_period holding different periods 
             for courses of multiple classes
@@ -101,23 +125,13 @@ class WasedaPipeline:
                 - an intensive course(spring and fall) 01:Wed.5-6／02:Sat.3-4
                 - an intensive course(spring) 01:Tues.1／02:Sat.others
 
-                output for fall term／winter term 01:Fri.4／02:othersothers
-
-                {
-                    "terms": [
-                        {"season": "Fall",   "session": "Term", "position": 1},
-                        {"season": "Winter", "session": "Term", "position": 2}
-                    ],
-                    "schedule": [
-                        {"seq": 1, "day": "Fri",    "period": "4",      "start_time": 4,   "end_time": null, "note": null},
-                        {"seq": 2, "day": "others", "period": "others", "start_time": null,"end_time": null, "note": null}
-                    ],
-                    "is_intensive": false
-                }
+                slots = [
+                    {"season": __, "session": __, "day": __, "start_p": __, "end_p": __, "flags": {__}}},
+                    {"season": __, "session": __, "day": __, "start_p": __, "end_p": __, "flags": {__}}}
+                ]
         """
 
         value = (adapter.get("term_day_period") or "").strip()
-        is_intensive = False
 
         INTENSIVE_RE = re.compile(
             r"an\s+intensive\s+course"
@@ -155,27 +169,26 @@ class WasedaPipeline:
 
         intensive_m = INTENSIVE_RE.fullmatch(value)
         if intensive_m:
+            terms_list = []
             seasons_text = intensive_m.group("seasons")
             seasons = re.split(r"\s+and\s+", seasons_text, flags=re.I)
-
-            terms_list = []
             terms = make_terms(terms_list, seasons, session=None)
-            schedule = make_schedule(intensive_m, SEGMENT_RE)
-            is_intensive = True
-            
-        else:
+            schedules = make_schedules(intensive_m, SEGMENT_RE, intensive=True)
+
+        if not intensive_m:
             header_block_m = HEADER_BLOCK.fullmatch(value)
             if header_block_m is None:
                 spider.logger.warning(f"Could not parse term_day_period: '{value}'")
                 adapter["term_day_period"] = {
                     "terms": [{"season": "Unknown", "session": None, "position": 1}],
-                    "schedule": [{"seq": 1, "day": "Unknown", "period": "Unknown", "start_time": None, "end_time": None, "note": None}],
-                    "is_intensive": False
+                    "schedules": [{"seq": 1, "day": "Unknown", "period": "Unknown", "start_time": None, "end_time": None, "note": None, "flags": {"others": True, "time_unknown": True}}],
+                    "slots": [{"season": "Unknown", "session": "Unknown", "day": "Unknown", "start_time": None, "end_time": None, "flags": {"time_unknown": True}}],
                 }
+
                 return item
             
-            header_items = re.split(r"\s*[/／]\s*", header_block_m.group("header"))
             terms_list = []
+            header_items = re.split(r"\s*[/／]\s*", header_block_m.group("header"))
             
             for item_text in header_items:
                 header_item_m = HEADER_ITEM_RE.fullmatch(item_text)
@@ -184,16 +197,50 @@ class WasedaPipeline:
                     continue
                 seasons_text = header_item_m.group("seasons")
                 seasons = re.split(r"\s+and\s+", seasons_text, flags=re.I)
-                session = header_item_m.group("session").capitalize() if header_item_m.group("session") else None
-                
+                session = header_item_m.group("session")
                 terms = make_terms(terms_list, seasons, session)
             
-            schedule = make_schedule(header_block_m, SEGMENT_RE)
+            schedules = make_schedules(header_block_m, SEGMENT_RE, intensive=False)
+        
+        slots = make_slots(terms, schedules, value)
 
         adapter["term_day_period"] = {
             "terms": terms,
-            "schedule": schedule,
-            "is_intensive": is_intensive
+            "schedules": schedules,
         }
-        
+
+        adapter["slots"] = slots
+
+        return item
+
+class MongoPipeline:
+    collection_name = "courses"
+
+    def __init__(self, mongo_uri, mongo_db):
+        self.mongo_uri = mongo_uri
+        self.mongo_db = mongo_db
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(
+            mongo_uri=crawler.settings.get("MONGO_URI"),
+            mongo_db=crawler.settings.get("MONGO_DATABASE", "items"),
+        )
+
+    def open_spider(self, spider):
+        self.client = pymongo.MongoClient(self.mongo_uri)
+        self.db = self.client[self.mongo_db]
+
+    def close_spider(self, spider):
+        self.client.close()
+
+    def process_item(self, item, spider):
+        doc = ItemAdapter(item).asdict()
+        _id = str(doc.pop("pKey_id"))
+        self.db[self.collection_name].update_one(
+            {"_id": _id},
+            {"$set": doc},
+            upsert=True
+        )
+
         return item
