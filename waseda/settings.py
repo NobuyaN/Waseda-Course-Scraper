@@ -7,6 +7,11 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # take environment variables from .env
+
 BOT_NAME = "waseda"
 
 SPIDER_MODULES = ["waseda.spiders"]
@@ -25,7 +30,7 @@ ADDONS = {}
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
-# Concurrency and throttling settings
+# Concurrency settings
 CONCURRENT_REQUESTS = 64
 CONCURRENT_REQUESTS_PER_DOMAIN = 32
 DOWNLOAD_DELAY = 0
@@ -33,13 +38,6 @@ RANDOMIZE_DOWNLOAD_DELAY = False
 
 RETRY_TIMES = 1
 DOWNLOAD_TIMEOUT = 20
-
-COOKIES_ENABLED = False
-
-LOG_LEVEL = "INFO"
-LOG_SHORT_NAMES = True
-LOGSTATS_INTERVAL = 0
-
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
@@ -75,7 +73,7 @@ ITEM_PIPELINES = {
    "waseda.pipelines.MongoPipeline": 400,
 }
 
-MONGO_URI = "mongodb://127.0.0.1:27017"
+MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DATABASE = 'scrapy_data'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -101,3 +99,11 @@ AUTOTHROTTLE_ENABLED = False
 
 # Set settings whose default value is deprecated to a future-proof value
 FEED_EXPORT_ENCODING = "utf-8"
+
+# Log settings
+LOG_LEVEL = "INFO"
+LOG_SHORT_NAMES = True
+LOGSTATS_INTERVAL = 60
+
+# cookies settings
+COOKIES_ENABLED = False
