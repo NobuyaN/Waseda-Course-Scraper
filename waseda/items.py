@@ -6,12 +6,10 @@
 import scrapy
 
 
-class WasedaItem(scrapy.Item):
-    # define the fields for your item here like:
-    name = scrapy.Field()
-    pass
-
 class WasedaCourseItem(scrapy.Item):
+    """
+        An item representing a course at Waseda University.
+    """
 
     pKey_id = scrapy.Field()
     url = scrapy.Field()
