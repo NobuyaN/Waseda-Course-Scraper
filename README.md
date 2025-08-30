@@ -1,5 +1,5 @@
 ## Waseda Course Scraper
-This scraper, built entirely with Scrapy framework, allows the extraction of Waseda's course syllabus from their syllabus search. Although the scraper is optimized with pre-existing URL mappings built with Selenium, which is not covered in this repository, it extracts approximately 35,000 core course details with Scrapy's built-in concurrency. All course details are stored in JSON format (Unfortunately, not in pretty-JSON).
+This scraper, built entirely with Scrapy framework, allows the extraction of Waseda's course syllabus from their syllabus search. Although the scraper is optimized with pre-existing URL mappings built with Selenium, which is not covered in this repository (consider looking at waseda-pkeys-scraper), it extracts approximately 35,000 core course details with Scrapy's built-in concurrency. All course details are stored in JSONL format. 
 
 ## Example Datum
 ```
