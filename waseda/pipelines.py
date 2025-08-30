@@ -7,8 +7,7 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 import re
-from waseda.parser import make_schedules, make_terms, make_slots
-from unicodedata import normalize
+from waseda.parser import make_schedules, make_terms, make_slots, shorten_mapped_string
 import pymongo
 
 
@@ -67,16 +66,10 @@ class WasedaPipeline:
             "other": "Other"
         }
 
-        value = (adapter.get("campus") or "").strip()
-        value = normalize("NFKC", value).lower()
-
-        if value in campus_mapping:
-            adapter["campus"] = campus_mapping[value]
-        if value == "":
-            adapter["campus"] = None
+        shorten_mapped_string(adapter, "campus", campus_mapping)
         
         """
-            shorten level string
+            shorten level key string
         """
 
         level_mapping = {
@@ -89,14 +82,7 @@ class WasedaPipeline:
             "N/A": None
         }
 
-        value = (adapter.get("level") or "").strip()
-        value = normalize("NFKC", value).lower()
-
-        # 1
-        if value in level_mapping:
-            adapter["level"] = level_mapping[value]
-        if value == "":
-            adapter["level"] == None
+        shorten_mapped_string(adapter, "level", level_mapping)
 
         """
             create a dictionary for term_day_period holding different periods 
@@ -131,6 +117,8 @@ class WasedaPipeline:
                 ]
         """
 
+        terms = []
+        schedules = []
         value = (adapter.get("term_day_period") or "").strip()
 
         INTENSIVE_RE = re.compile(
