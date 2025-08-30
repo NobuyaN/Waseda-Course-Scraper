@@ -29,7 +29,7 @@ This scraper, built entirely with Scrapy framework, allows the extraction of Was
                                    ],
                           "schedules": [
                                          {
-  																		     "seq": 1,
+                                           "seq": 1,
                                            "day": "others",
                                            "period": "others",
                                            "start_time": null,
