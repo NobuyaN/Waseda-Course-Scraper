@@ -18,8 +18,8 @@ SPIDER_MODULES = ["waseda.spiders"]
 NEWSPIDER_MODULE = "waseda.spiders"
 
 FEEDS = {
-    'data/coursedatatemp.csv': {'format': 'csv', 'overwrite': True},
-    'data/coursedatatemp.json': {'format': 'json', 'overwrite': True}
+    'data/coursedata.csv': {'format': 'csv', 'overwrite': True},
+    'data/coursedata.jsonl': {'format': 'jsonlines', 'overwrite': True}
 }
 
 ADDONS = {}
