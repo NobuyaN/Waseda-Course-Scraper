@@ -77,11 +77,11 @@ def make_terms(terms_list: List[Dict[str, Any]], seasons: List[str], session: Op
             ]
             return terms_list
     
-    for i, season in enumerate(seasons , 1):
+    for season in seasons:
         terms_list.append({
             "season": season.capitalize(),
             "session": session.capitalize() if session else None,
-            "position": i
+            "position": len(terms_list) + 1
         })
 
     return terms_list
