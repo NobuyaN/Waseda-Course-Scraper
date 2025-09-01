@@ -3,4 +3,5 @@
 __pycache__/
 data/coursedatatemp.json
 data/coursedatatemp.csv
+data/coursedatatemp.jsonl
 .env
