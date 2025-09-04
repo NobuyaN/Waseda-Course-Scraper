@@ -74,7 +74,7 @@ ITEM_PIPELINES = {
 }
 
 MONGO_URI = os.getenv("MONGO_URI")
-MONGO_DATABASE = 'scrapy_data'
+MONGO_DATABASE = 'waseda'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
