@@ -30,9 +30,11 @@ class WasedascrapySpider(scrapy.Spider):
             is_td_header = text in ["Exam:", "Papers:", "Class Participation:", "Others:"]
             search_tag = "td" if is_td_header else "th"
 
-            return response.xpath(
-                f"normalize-space(translate(string(//{search_tag}[contains(normalize-space(.), '{text}')]/following-sibling::td[1]), '\xa0\u3000％', ' '))"
-                ).get() or None
+            xpath = f"normalize-space(translate(string(//{search_tag}[contains(normalize-space(.), '{text}')]/following-sibling::td[1]), '\xa0\u3000％', ' '))"
+            if text == "Course Title":
+                xpath = f"normalize-space(translate(string(//{search_tag}[contains(normalize-space(.), '{text}')]/following-sibling::td[1]//div), '\xa0\u3000％', ' '))"
+            
+            return response.xpath(xpath).get() or None
 
         item = WasedaCourseItem()
         """
