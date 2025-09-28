@@ -18,8 +18,8 @@ SPIDER_MODULES = ["waseda.spiders"]
 NEWSPIDER_MODULE = "waseda.spiders"
 
 FEEDS = {
-    'data/coursedatatemp.csv': {'format': 'csv', 'overwrite': True},
-    'data/coursedatatemp.jsonl': {'format': 'jsonlines', 'overwrite': True}
+    'data/coursedata.csv': {'format': 'csv', 'overwrite': True},
+    'data/coursedata.jsonl': {'format': 'jsonlines', 'overwrite': True}
 }
 
 ADDONS = {}
@@ -103,7 +103,7 @@ FEED_EXPORT_ENCODING = "utf-8"
 # Log settings
 LOG_LEVEL = "INFO"
 LOG_SHORT_NAMES = True
-LOGSTATS_INTERVAL = 60
+# LOGSTATS_INTERVAL = 60
 
 # cookies settings
 COOKIES_ENABLED = False
