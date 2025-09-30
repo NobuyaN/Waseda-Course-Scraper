@@ -220,10 +220,9 @@ class MongoPipeline:
     def process_item(self, item, spider):
         doc = ItemAdapter(item).asdict()
         _id = str(doc.pop("pKey_id"))
-        self.db[self.collection_name].replace_one(
+        self.db[self.collection_name].update_one(
             {"_id": _id},
-            # {"$set": doc},
-            doc,
+            {"$set": doc},
             upsert=True
         )
 
