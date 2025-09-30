@@ -16,8 +16,7 @@ class WasedaCourseItem(scrapy.Item):
     year = scrapy.Field()
     school = scrapy.Field()
     course_title = scrapy.Field()
-    instructor = scrapy.Field()
-    term_day_period = scrapy.Field()
+    instructor_list = scrapy.Field()
     slots = scrapy.Field()
     category = scrapy.Field()
     eligible_year = scrapy.Field()
@@ -32,3 +31,7 @@ class WasedaCourseItem(scrapy.Item):
     papers_contrib_prcnt = scrapy.Field()
     class_participation_contrib_prcnt = scrapy.Field()
     others_contrib_prcnt = scrapy.Field()
+
+    # Hold instructors and period as strings that would be used in the UI frontend for clean display
+    instructor_str = scrapy.Field()
+    term_day_period_str = scrapy.Field()
