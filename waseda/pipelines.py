@@ -17,13 +17,15 @@ class WasedaPipeline:
         adapter = ItemAdapter(item)
 
         """
-            create a list of all instructors in a given course
+            create a list of all instructors in a given coursen and store it in instructor_list
+            store the original string in instructor_str for display in the UI frontend
             Example: MINOO, Arihiroothers／MORI, Masashi -> [MINOO, Arihiroothers, MORI, Masashi]
         """
 
-        value = adapter.get("instructor")
+        value = adapter.get("instructor_list")
+        adapter["instructor_str"] = value
         if value is not None:
-            adapter["instructor"] = value.split("／")
+            adapter["instructor_list"] = value.split("／")
 
         """
             change eligible_year into an integer number.
@@ -85,7 +87,7 @@ class WasedaPipeline:
         shorten_mapped_string(adapter, "level", level_mapping)
 
         """
-            create a dictionary for term_day_period holding different periods 
+            create a dictionary for term_day_period_str holding different periods into slots
             for courses of multiple classes
             List of different cases:
                 - fall semester Fri.4
@@ -119,7 +121,7 @@ class WasedaPipeline:
 
         terms = []
         schedules = []
-        value = (adapter.get("term_day_period") or "").strip()
+        value = (adapter.get("term_day_period_str") or "").strip()
 
         INTENSIVE_RE = re.compile(
             r"an\s+intensive\s+course"
@@ -166,10 +168,8 @@ class WasedaPipeline:
         if not intensive_m:
             header_block_m = HEADER_BLOCK.fullmatch(value)
             if header_block_m is None:
-                spider.logger.warning(f"Could not parse term_day_period: '{value}'")
-                adapter["term_day_period"] = {
-                    "terms": [{"season": "Unknown", "session": None, "position": 1}],
-                    "schedules": [{"seq": 1, "day": "Unknown", "period": "Unknown", "start_time": None, "end_time": None, "note": None, "flags": {"others": True, "time_unknown": True}}],
+                spider.logger.warning(f"Could not parse term_day_period_str: '{value}'")
+                adapter["slots"] = {
                     "slots": [{"season": "Unknown", "session": "Unknown", "day": "Unknown", "start_time": None, "end_time": None, "flags": {"time_unknown": True}}],
                 }
 
@@ -191,11 +191,6 @@ class WasedaPipeline:
             schedules = make_schedules(header_block_m, SEGMENT_RE, intensive=False)
         
         slots = make_slots(terms, schedules, value)
-
-        adapter["term_day_period"] = {
-            "terms": terms,
-            "schedules": schedules,
-        }
 
         adapter["slots"] = slots
 
@@ -225,9 +220,10 @@ class MongoPipeline:
     def process_item(self, item, spider):
         doc = ItemAdapter(item).asdict()
         _id = str(doc.pop("pKey_id"))
-        self.db[self.collection_name].update_one(
+        self.db[self.collection_name].replace_one(
             {"_id": _id},
-            {"$set": doc},
+            # {"$set": doc},
+            doc,
             upsert=True
         )
 
